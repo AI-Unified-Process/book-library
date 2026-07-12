@@ -28,7 +28,7 @@ The flow we follow:
 
 ```
 vision.md → /requirements → /entity-model → /use-case-diagram → /use-case-spec
-   → /flyway-migration → /implement → /browserless-test → /e2e-test
+   → /flyway-migration → /implement → /browserless-test → /plawright-test
 ```
 
 ## Step 1 — Review the Vision
@@ -210,7 +210,7 @@ test — so they form the inner feedback loop while you iterate on the view.
 ## Step 9 — Write the End-to-End Test
 
 ```
-/e2e-test UC-001
+/playwright-test UC-001
 ```
 
 The final skill produces a Playwright + Mopo E2E test under
