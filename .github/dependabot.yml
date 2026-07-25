@@ -1,0 +1,66 @@
+version: 2
+
+updates:
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Zurich
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    commit-message:
+      prefix: "build"
+      include: scope
+    groups:
+      spring-boot:
+        patterns:
+          - "org.springframework.boot:*"
+          - "org.springframework:*"
+          - "org.springframework.security:*"
+          - "io.spring.javaformat:*"
+      vaadin:
+        patterns:
+          - "com.vaadin:*"
+          - "ch.martinelli.oss:vaadin-jooq"
+          - "org.parttio:*"
+      jooq:
+        patterns:
+          - "org.jooq:*"
+          - "ch.martinelli.oss:jooq-*"
+      database:
+        patterns:
+          - "org.flywaydb:*"
+          - "org.postgresql:*"
+      test-dependencies:
+        patterns:
+          - "org.testcontainers:*"
+          - "com.microsoft.playwright:*"
+          - "in.virit:mopo"
+          - "com.tngtech.archunit:*"
+      build-plugins:
+        patterns:
+          - "org.apache.maven.plugins:*"
+          - "org.jacoco:*"
+          - "org.codehaus.gmaven:*"
+          - "com.google.errorprone:*"
+          - "com.uber.nullaway:*"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Zurich
+    labels:
+      - dependencies
+      - ci
+    commit-message:
+      prefix: "ci"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
