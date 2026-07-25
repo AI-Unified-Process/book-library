@@ -30,11 +30,11 @@
         <playwright.version>1.59.0</playwright.version>
         <mopo.version>0.0.6</mopo.version>
         <archunit.version>1.4.2</archunit.version>
-        <jacoco.version>0.8.14</jacoco.version>
+        <jacoco.version>0.8.15</jacoco.version>
 
         <jspecify.version>1.0.0</jspecify.version>
-        <errorprone.version>2.49.0</errorprone.version>
-        <nullaway.version>0.13.4</nullaway.version>
+        <errorprone.version>2.50.0</errorprone.version>
+        <nullaway.version>0.13.8</nullaway.version>
         <spring-javaformat-maven-plugin.version>0.0.47</spring-javaformat-maven-plugin.version>
 
         <db.image>postgres:latest</db.image>
