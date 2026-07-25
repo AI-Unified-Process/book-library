@@ -24,7 +24,7 @@
         <jooq-utilities.version>1.1.4</jooq-utilities.version>
         <vaadin-jooq.version>2.1.3</vaadin-jooq.version>
 
-        <flyway-maven-plugin.version>12.5.0</flyway-maven-plugin.version>
+        <flyway-maven-plugin.version>13.0.0</flyway-maven-plugin.version>
         <groovy-maven-plugin.version>2.1.1</groovy-maven-plugin.version>
 
         <playwright.version>1.59.0</playwright.version>
