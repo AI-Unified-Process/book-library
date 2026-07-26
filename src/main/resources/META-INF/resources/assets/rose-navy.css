@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+/* Core Aura configuration */
+html {
+  --aura-accent-color-dark: #FB7185;
+  --aura-accent-color-light: #ec003f;
+  --aura-app-layout-inset: 0px;
+  --aura-background-color-dark: #131822;
+  --aura-background-color-light: #f1f5f9;
+  --aura-base-radius: 4;
+  --aura-font-family: 'Inter', var(--aura-font-family-system);
+  --aura-surface-level: -0.5;
+  --aura-surface-opacity: 1;
+  color-scheme: light dark;
+}
+
+/* Inter is a variable font — shift the scale up so headings and controls read
+   as firmly as they do in the reference design. */
+html {
+  --aura-font-weight-medium: 600;
+  --aura-font-weight-semibold: 700;
+  --vaadin-button-font-weight: 600;
+  --vaadin-checkbox-font-weight: 600;
+  --vaadin-grid-header-font-weight: 600;
+  --vaadin-message-name-font-weight: 600;
+  --vaadin-radio-button-font-weight: 600;
+}
+
+/* --------------------------------------------------------------- navy rail */
+
+html {
+  --vaadin-app-layout-drawer-background: #2a3145;
+  --vaadin-app-layout-drawer-width: 16rem;
+  --vaadin-app-layout-navbar-background: light-dark(#ffffff, #1a2030);
+}
+
+/* The rail stays navy in both color schemes, so components slotted into the
+   drawer resolve their light-dark() tokens against a dark background. */
+vaadin-app-layout::part(drawer),
+[slot='drawer'] {
+  color-scheme: dark;
+}
+
+/* Aura resolves the text and border tokens once at the document root, so plain
+   markup in the drawer inherits the already-computed light-mode value however
+   the scheme is flipped further down. Re-declare the few the rail depends on. */
+[slot='drawer'] {
+  --_rail-text: #eef1f7;
+  --vaadin-text-color: var(--_rail-text);
+  --vaadin-text-color-secondary: color-mix(in srgb, var(--_rail-text) 65%, transparent);
+  --vaadin-border-color-secondary: color-mix(in srgb, var(--_rail-text) 14%, transparent);
+  color: var(--vaadin-text-color);
+}
+
+vaadin-app-layout::part(drawer) {
+  border-inline-end: none;
+}
+
+/* The reference design is flat — drop Aura's tinted radial page wash. */
+html {
+  --aura-app-background: var(--aura-background-color);
+}
+
+/* ---------------------------------------------------------- side navigation */
+
+vaadin-side-nav {
+  --vaadin-side-nav-items-gap: var(--vaadin-gap-xs);
+}
+
+vaadin-side-nav-item::part(content) {
+  border-radius: 999px;
+  padding-inline: var(--vaadin-padding-m);
+}
+
+/* Against the navy the muted state has to stay clearly legible, so the resting
+   item sits just below full-strength text rather than at the usual secondary. */
+vaadin-side-nav-item:not([current]) {
+  --vaadin-side-nav-item-text-color: color-mix(in srgb, var(--_rail-text) 75%, transparent);
+}
+
+vaadin-side-nav-item:not([current]) > vaadin-icon {
+  color: color-mix(in srgb, var(--_rail-text) 75%, transparent);
+}
+
+/* The current item is a saturated crimson pill — the loudest thing on the rail.
+   Aura's own accent resolves to the lighter dark-scheme rose here, so pin the
+   fill to the light accent and force white contrast on top of it. */
+vaadin-side-nav[theme~='filled'] > vaadin-side-nav-item[current]::part(content) {
+  --aura-accent-contrast-color: #ffffff;
+  --vaadin-side-nav-item-background: var(--aura-accent-color-light) border-box;
+}
+
+vaadin-side-nav::part(label) {
+  text-transform: uppercase;
+  font-size: var(--aura-font-size-xs);
+  color: var(--vaadin-text-color-secondary);
+  letter-spacing: 0.03em;
+}
+
+/* ------------------------------------------------------------------ buttons */
+
+/* Neutral secondary buttons, accent reserved for primary actions */
+:is(vaadin-button, vaadin-menu-bar-button, vaadin-upload-button):not([theme~='primary'], [theme~='tertiary']) {
+  --aura-accent-color-light: var(--aura-neutral);
+  --aura-accent-color-dark: var(--aura-neutral);
+  --vaadin-button-background: var(--vaadin-background-container);
+  --vaadin-button-border-color: transparent;
+  --vaadin-button-shadow: none;
+}
+
+/* ---------------------------------------------------- surfaces & data table */
+
+/* The page is flat; panels and tables are the raised white sheets on top of it. */
+vaadin-card,
+vaadin-dashboard-widget,
+vaadin-grid {
+  --aura-surface-level: 4;
+}
+
+vaadin-grid {
+  --vaadin-grid-border-width: 0;
+  --vaadin-grid-border-radius: var(--vaadin-radius-l);
+  --vaadin-grid-row-border-width: 1px;
+  --vaadin-grid-header-font-size: var(--aura-font-size-xs);
+  --vaadin-grid-header-text-color: var(--vaadin-text-color-secondary);
+}

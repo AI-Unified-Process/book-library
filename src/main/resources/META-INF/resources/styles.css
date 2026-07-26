@@ -1,0 +1,5 @@
+/* Files imported here must live under /assets, /themes or /styles.css itself —
+   those are the only paths Vaadin's Spring Security integration serves without
+   authentication. */
+@import url('./assets/rose-navy.css');
+@import url('./assets/main-layout.css');

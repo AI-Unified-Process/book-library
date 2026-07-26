@@ -1,0 +1,7 @@
+.idea
+.settings
+.classpath
+.project
+src/main/frontend/generated
+src/main/frontend/index.html
+target

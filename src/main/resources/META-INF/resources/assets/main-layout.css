@@ -1,0 +1,136 @@
+/* ---------------------------------------------------------------- app layout */
+
+/* The drawer is the primary section: a full-height navy rail on the left with
+   the white content column — navbar included — sitting beside it. */
+vaadin-app-layout::part(navbar) {
+  border-bottom: 1px solid var(--vaadin-border-color-secondary);
+}
+
+vaadin-scroller[slot='drawer'] {
+  padding: var(--vaadin-padding-s);
+}
+
+vaadin-side-nav-item vaadin-icon {
+  padding: 0;
+}
+
+vaadin-side-nav-item::part(content) {
+  padding-block: var(--vaadin-padding-s);
+  gap: var(--vaadin-gap-s);
+}
+
+[slot='drawer']:is(header, footer):is(:empty) {
+  display: none;
+}
+
+/* ------------------------------------------------------------ drawer brand */
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--vaadin-gap-s);
+  box-sizing: border-box;
+  padding: var(--vaadin-padding-m);
+  padding-bottom: var(--vaadin-padding-s);
+}
+
+.app-brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--aura-accent-color-light);
+  color: #ffffff;
+}
+
+.app-brand-mark vaadin-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.app-brand-name {
+  font-size: var(--aura-font-size-l);
+  font-weight: var(--aura-font-weight-semibold);
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------- navbar */
+
+.app-navbar {
+  box-sizing: border-box;
+  min-height: 4rem;
+  padding-inline: var(--vaadin-padding-l);
+  gap: var(--vaadin-gap-s);
+}
+
+.app-view-title {
+  margin: 0;
+  font-size: var(--aura-font-size-xl);
+  font-weight: var(--aura-font-weight-semibold);
+  letter-spacing: -0.015em;
+}
+
+.app-user-actions {
+  gap: var(--vaadin-gap-xs);
+  flex-shrink: 0;
+}
+
+.app-user-menu vaadin-avatar {
+  --vaadin-avatar-size: 2rem;
+}
+
+.app-login-link {
+  font-weight: var(--aura-font-weight-medium);
+  color: var(--aura-accent-text-color);
+  text-decoration: none;
+}
+
+.app-login-link:hover {
+  text-decoration: underline;
+}
+
+/* The drawer is always visible from this width up, so the toggle is redundant. */
+@media (min-width: 800px) {
+  .app-drawer-toggle {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------ drawer footer */
+
+.app-drawer-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  box-sizing: border-box;
+  padding: var(--vaadin-padding-m);
+  border-top: 1px solid var(--vaadin-border-color-secondary);
+}
+
+.app-drawer-footer-label {
+  font-size: var(--aura-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--vaadin-text-color-secondary);
+}
+
+.app-drawer-footer-name {
+  font-size: var(--aura-font-size-l);
+  font-weight: var(--aura-font-weight-semibold);
+  letter-spacing: -0.015em;
+}
+
+.app-drawer-footer-role {
+  font-size: var(--aura-font-size-s);
+  color: var(--vaadin-text-color-secondary);
+}
+
+/* ------------------------------------------------------------ notifications */
+
+.app-notification-content {
+  align-items: center;
+}

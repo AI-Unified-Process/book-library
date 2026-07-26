@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+
+/* Core Aura configuration */
+html {
+  --aura-accent-color-dark: #A3D977;
+  --aura-accent-color-light: #4D7C2F;
+  --aura-background-color-dark: #1B2016;
+  --aura-background-color-light: #EEF2E6;
+  --aura-base-font-size: 15;
+  --aura-base-radius: 4;
+  --aura-font-family: 'Manrope', var(--aura-font-family-system);
+  --aura-surface-level: -0.5;
+  --aura-surface-opacity: 1;
+  color-scheme: light dark;
+}
+
+/* Manrope carries weight well — shift the scale up for the chunky headings */
+html {
+  --aura-font-weight-regular: 500;
+  --aura-font-weight-medium: 600;
+  --aura-font-weight-semibold: 700;
+  --vaadin-button-font-weight: 600;
+  --vaadin-checkbox-font-weight: 600;
+  --vaadin-grid-header-font-weight: 600;
+  --vaadin-input-field-value-font-weight: 500;
+  --vaadin-message-name-font-weight: 600;
+  --vaadin-radio-button-font-weight: 600;
+}
+
+/* Side navigation */
+vaadin-side-nav-item:not([current]) > vaadin-icon {
+  color: var(--aura-accent-text-color);
+}
+
+vaadin-side-nav-item[current]::part(content) {
+  --vaadin-side-nav-item-background: var(--vaadin-background-container);
+  --vaadin-side-nav-item-border-color: transparent;
+}
+
+vaadin-side-nav::part(label) {
+  text-transform: uppercase;
+  font-size: var(--aura-font-size-xs);
+  color: var(--vaadin-text-color);
+  letter-spacing: 0.03em;
+}
+
+/* Neutral secondary buttons, accent reserved for primary actions */
+:is(vaadin-button, vaadin-menu-bar-button, vaadin-upload-button):not([theme~="primary"], [theme~="tertiary"]) {
+  --aura-accent-color-light: var(--aura-neutral);
+  --aura-accent-color-dark: var(--aura-neutral);
+  --vaadin-button-background: var(--vaadin-background-container);
+  --vaadin-button-border-color: transparent;
+  --vaadin-button-shadow: none;
+}
+
+/* Cards read as solid panels against the flat, tinted background */
+vaadin-card,
+vaadin-dashboard-widget {
+  --aura-surface-level: 4;
+}
