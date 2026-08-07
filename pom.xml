@@ -27,7 +27,7 @@
         <flyway-maven-plugin.version>13.0.0</flyway-maven-plugin.version>
         <groovy-maven-plugin.version>2.1.1</groovy-maven-plugin.version>
 
-        <playwright.version>1.61.0</playwright.version>
+        <playwright.version>1.62.0</playwright.version>
         <mopo.version>0.0.6</mopo.version>
         <archunit.version>1.4.2</archunit.version>
         <jacoco.version>0.8.15</jacoco.version>
