@@ -20,7 +20,8 @@ Rather than letting an AI agent improvise, AIUP guides it through clearly define
 6. **Implementation** – Vaadin views and jOOQ data access generated from the use cases.
 7. **Tests** – Browserless UI unit tests and Playwright end-to-end tests.
 
-Each step has a dedicated skill in the `aiup-core` and `aiup-vaadin-jooq` plugins. The tutorial
+Each step has a dedicated skill in `aiup-core` and the layer plugins `aiup-flyway`, `aiup-jooq`,
+`aiup-spring-boot`, and `aiup-vaadin`. The tutorial
 walks through using them in order to grow the Book Library from a blank canvas into a working
 application.
 

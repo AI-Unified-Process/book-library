@@ -54,9 +54,9 @@ For SimpleLibrary that means:
 - **Clear seam between UI and data.** The `ui` / `domain` split keeps Vaadin out of the
   data layer and SQL out of the views. It is the only horizontal split we make inside a
   feature — anything finer is premature.
-- **Pairs naturally with AIUP.** Each use case spec maps to one feature package. The
-  `/implement` skill drops the view into `<feature>/ui` and the repository/service into
-  `<feature>/domain` with no further routing decisions.
+- **Pairs naturally with the AI Unified Process.** Each use case spec maps to one feature
+  package. `/implement-uc` puts the view into `<feature>/ui` and the repository and service
+  into `<feature>/domain` with no further routing decisions.
 
 ## Layout
 
