@@ -112,6 +112,7 @@ The skill writes a PlantUML use case diagram to `docs/use_cases.puml` with the t
 - UC-004 View active loans (Librarian)
 - UC-005 Manage catalog (Librarian)
 - UC-006 Manage members (Librarian)
+- UC-007 View my loans
 
 Every requirement should land on at least one use case, and every use case should trace back to
 a requirement.
@@ -171,8 +172,9 @@ asks about gaps in the specification in one round, then runs the layer skills bo
 - `/spring-service` writes `BookService` with the transaction boundary and the business rules.
 - `/vaadin-flow-ui` writes `SearchCatalogView`, wired to `MainLayout` and calling the service.
 
-It writes no tests. Run the app via `TestApplication` from your IDE, sign in as `alice` / `alice`,
-and open the catalog. It is still empty: no use case adds books yet, and the production migrations
+It writes no tests. Run the app via `TestApplication` from your IDE, or with
+`./mvnw spring-boot:test-run` on the command line, sign in as `alice` / `alice`, and open the
+catalog. It is still empty: no use case adds books yet, and the production migrations
 hold no demo data, so you see the empty-state message the spec names. The books arrive with the
 test data of the next step.
 
@@ -187,10 +189,12 @@ The skill tests the use case once, in the integration layer. With Vaadin Flow th
 drives the view without a browser, but against the real service and database, and covers every
 alternative flow and business rule. Each test method carries `@UseCase(id = "UC-001")`; the test
 data goes into a repeatable migration under `src/test/resources/db/testdata/`. Once that test data
-fills the catalog, an empty catalog can no longer be arranged without touching shared rows, so the
-test of an empty-catalog flow checks the message the view shows for an empty grid.
+fills the catalog, the empty-catalog flow cannot be arranged without touching shared rows, so its
+test goes into a `@Nested` class that leaves out `db/testdata` with a `@TestPropertySource` of its
+own and runs against an empty database. With the E2E scope *Use cases and test cases*, the same run
+then ends with the E2E layer and writes the end-to-end test of step 9 as well.
 
-Run the tests with `./mvnw test`. Then start `TestApplication` again: it loads the same test data,
+Run the tests with `./mvnw test`. Then start `TestApplication` again (or `./mvnw spring-boot:test-run`): it loads the same test data,
 so now you can type a query, see the grid filter, and see the results sorted as the spec requires.
 
 ## Step 9 — Write the End-to-End Test
@@ -203,6 +207,8 @@ With the E2E scope *Use cases and test cases*, the run from step 8 already ends 
 layer; naming it writes or reconciles only this one. `/vaadin-e2e-test` produces a Playwright +
 Drama Finder test, `UC001SearchCatalogIT`, extending `AbstractBasePlaywrightIT`. It boots the app
 on a random port, signs in through the login view, and drives a real browser through the use case.
+The empty-catalog flow gets its own `@Nested` class without the test data, as in the Browserless
+test.
 
 Run it with `./mvnw verify`. This is your outer feedback loop: slower than the Browserless tests,
 but it proves that the JavaScript, CSS, routing, and database layers all line up.

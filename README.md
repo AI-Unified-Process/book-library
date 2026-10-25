@@ -47,7 +47,8 @@ Before running the application, the jOOQ metamodel has to be generated using the
 
     ./mvnw compile
 
-Then you can run the application with a database started by Testcontainers from your IDE using the `TestApplication`.
+Then you can run the application with a database started by Testcontainers from your IDE using the `TestApplication`,
+or from the command line with `./mvnw spring-boot:test-run`.
 `TestApplication` also loads the test data of the use case tests (`src/test/resources/db/testdata`), so once the
 tutorial's tests exist the app shows the same books, members, and loans.
 
