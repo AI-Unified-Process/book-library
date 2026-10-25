@@ -243,7 +243,10 @@ four layers, Browserless tests in the integration layer, and an end-to-end test.
   constraint on the use case's `**Requirements:**` line is a unit too: a limit a test can observe,
   such as a response time, stays open until a test asserts it, and only then does the audit suggest
   `Tested`. Link only the NFRs the use case has to prove; one that holds for the whole system, such as
-  sign-in, needs no link.
+  sign-in, needs no link. The audit only suggests the next status: `Implemented` once every unit has
+  code, `Tested` once every unit has a test and the suite passes. You set the Status line yourself, as
+  you did with `Approved`; no skill changes it, and `/requirements` then moves the statuses of the
+  requirements the use case links.
 - Run the chain again for UC-002 Borrow book; it reuses `Book` and `Member` and adds rows to `Loan`.
   The seeded account `alice` has no `member` row yet, so its test data links a member of its own; to
   borrow as alice in the running app, give her one in the test data or with UC-006 Manage members.

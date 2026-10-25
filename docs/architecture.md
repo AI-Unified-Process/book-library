@@ -152,8 +152,8 @@ the navigation in `MainLayout` does not need its own access checks.
 ### Package placement
 
 - `core/security` holds the cross-cutting pieces: `SecurityConfig`,
-  `AppUserDetailsService`, `AppUserDetails`, `Role`, `LoginView`, `SecuritySeed`, and
-  the `CurrentUser` helper. `CurrentUser` reads Spring's `SecurityContextHolder`
+  `AppUserDetailsService`, `AppUserDetails`, `Role`, `SecuritySeed`, and the
+  `CurrentUser` helper. `LoginView` is a view and lives in `core/ui`, next to `HomeView`. `CurrentUser` reads Spring's `SecurityContextHolder`
   directly (no Vaadin), so it can be injected from `domain` code as well as views.
 - User-scoped logic inside a feature (e.g. "a member sees only their own loans") lives in that feature's `domain` layer and reads the
   current `app_user.id` via `CurrentUser`, then joins through `member.user_id` when it

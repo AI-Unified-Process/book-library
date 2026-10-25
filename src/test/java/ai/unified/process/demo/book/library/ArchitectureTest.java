@@ -46,7 +46,7 @@ class ArchitectureTest {
 	}
 
 	@Test
-	void module_check_core_may_not_be_accessed_by_any_other_module() {
+	void module_check_core_may_not_access_feature_modules() {
 		noClasses().that()
 			.resideInAPackage(CORE_MODULE)
 			.should()
