@@ -27,7 +27,8 @@ class ArchitectureTest {
 
 	private static final String CORE_MODULE = "..core..";
 
-	private static final String GREETING_MODULE = "..greeting..";
+	// Feature modules of docs/architecture.md
+	private static final String[] FEATURE_MODULES = { "..catalog..", "..loan..", "..member.." };
 
 	private final JavaClasses classes = new ClassFileImporter().importPackages(PACKAGE_ROOT);
 
@@ -50,7 +51,7 @@ class ArchitectureTest {
 			.resideInAPackage(CORE_MODULE)
 			.should()
 			.accessClassesThat()
-			.resideInAnyPackage(GREETING_MODULE)
+			.resideInAnyPackage(FEATURE_MODULES)
 			.check(classes);
 	}
 

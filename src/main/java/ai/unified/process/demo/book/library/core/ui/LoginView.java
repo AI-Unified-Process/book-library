@@ -23,6 +23,8 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
 		i18n.setHeader(header);
 		i18n.setAdditionalInformation("Demo accounts — Librarian: librarian / librarian · Member: alice / alice");
 		setI18n(i18n);
+		// No password reset: the vision lists it as a non-goal.
+		setForgotPasswordButtonVisible(false);
 
 		setOpened(true);
 	}

@@ -5,9 +5,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
+import jakarta.annotation.security.RolesAllowed;
 
-@AnonymousAllowed
+@RolesAllowed({ "MEMBER", "LIBRARIAN" })
 @Route("")
 @PageTitle("Welcome")
 @Menu(title = "Home", order = 0, icon = "vaadin:home")

@@ -25,8 +25,9 @@ Each step has a dedicated skill in `aiup-core` and the layer plugins `aiup-flywa
 walks through using them in order to grow the Book Library from a blank canvas into a working
 application.
 
-See [TUTORIAL.md](TUTORIAL.md) for the step-by-step walkthrough that builds **SimpleLibrary** on
-top of this starter project using the AIUP skills end-to-end.
+See [TUTORIAL.md](TUTORIAL.md) (or the [web version](https://unifiedprocess.ai/tutorial.html)) for
+the step-by-step walkthrough that builds the Book Library on top of this starter project using the
+AIUP skills end-to-end.
 
 ## Technology Stack
 
@@ -37,7 +38,7 @@ top of this starter project using the AIUP skills end-to-end.
 - [Flyway](https://flywaydb.org) for schema migrations
 - [Testcontainers](https://testcontainers.com) for jOOQ code generation and integration tests
 - [Vaadin Browserless Testing](https://vaadin.com/docs/latest/flow/testing/browserless) for UI unit tests
-- [Playwright](https://playwright.dev) with [Mopo](https://github.com/viritin/mopo) for E2E tests
+- [Playwright](https://playwright.dev) with [Drama Finder](https://github.com/parttio/dramafinder) for E2E tests
 - [ArchUnit](https://www.archunit.org) for architectural rules
 
 ## Running the Application
@@ -47,6 +48,8 @@ Before running the application, the jOOQ metamodel has to be generated using the
     ./mvnw compile
 
 Then you can run the application with a database started by Testcontainers from your IDE using the `TestApplication`.
+`TestApplication` also loads the test data of the use case tests (`src/test/resources/db/testdata`), so once the
+tutorial's tests exist the app shows the same books, members, and loans.
 
 **Important:**
 This class uses the [Spring Boot Testcontainers support](https://spring.io/blog/2023/06/23/improved-testcontainers-support-in-spring-boot-3-1/), introduced with Spring Boot 3.1.
@@ -76,12 +79,11 @@ look it up through that id. The architecture and rationale are documented in
 
 ## Testing the Application
 
-There are two base classes:
+- `AbstractBrowserlessTest` is the base class for fast [browserless testing](https://vaadin.com/docs/latest/flow/testing/browserless), aka UI unit tests. It extends Vaadin's `SpringBrowserlessTest`, which sets up a Vaadin mock environment without a browser, against the real Spring context and a Testcontainers database.
+- End-to-end tests (`*IT`) extend Drama Finder's `AbstractBasePlaywrightIT`, which handles the browser lifecycle and Vaadin synchronization; annotate them with `@SpringBootTest(webEnvironment = RANDOM_PORT)` and `@Import(TestcontainersConfiguration.class)`. Run them with `./mvnw verify`.
 
-- `AbstractBrowserlessTest` can be used for fast [browserless testing](https://vaadin.com/docs/latest/flow/testing/browserless), aka UI unit test. It extends Vaadin's `SpringBrowserlessTest`, which sets up a Vaadin mock environment without a browser.
-- `PlaywrightIT` configures Playwright for E2E tests. This class uses SpringBootTest at a random port.
-
-The Playwright test uses [Mopo](https://github.com/viritin/mopo), which simplifies the testing of Vaadin applications with Playwright.
+The build formats the Java sources with [Spring Java Format](https://github.com/spring-io/spring-javaformat) on every
+build (`spring-javaformat:apply`), so code an AI agent writes never fails the build on formatting.
 
 ## Deploying to Production
 
@@ -97,7 +99,7 @@ Once the JAR file is built, you can run it using `java -jar target/book-library-
 
 - `core/ui/layout/MainLayout.java` contains the navigation setup using [App Layout](https://vaadin.com/docs/components/app-layout).
 - `core` package holds cross-cutting concerns: configuration, security, shared UI components.
-- Feature packages (e.g. `greeting`) follow a `ui` / `domain` split so each use case stays self-contained.
+- Feature packages (e.g. `catalog`, `loan`, `member`) follow a `ui` / `domain` split so each use case stays self-contained.
 - `src/main/resources/db/migration` contains the Flyway migrations that drive jOOQ code generation.
 - `src/main/resources/META-INF/resources` contains the custom CSS styles.
 

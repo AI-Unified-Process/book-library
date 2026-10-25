@@ -21,28 +21,17 @@ The flow of calls inside a feature is:
 ui → service → repository
 ```
 
-with one important rule: **the service layer only exists if it carries real business
-logic.** If the use case is pure data access — read rows, render them; insert a row,
-go back — the view talks to the repository directly, and there is no service. Adding
-an empty service that only delegates `findAll()` to the repository adds a file, a Spring
-bean, and a layer of indirection without buying anything; do not write it.
+for every feature, read-only ones included. The service is the transaction boundary and
+the one place that enforces the business rules of a use case, so a rule holds for every
+caller (a view today, a REST API or a job tomorrow). Views never call a repository
+directly.
 
-Add a service the moment the feature needs any of the following:
+For the Book Library that means:
 
-- Coordinating writes across more than one repository inside a transaction
-- Validation or invariants that span multiple entities (e.g. "a member may not have more
-  than five open loans")
-- Side effects beyond the database (sending mail, publishing events, calling another
-  system)
-- Logic that needs to be reused from more than one view
-
-For SimpleLibrary that means:
-
-- **Catalog search** is a read-only query → `CatalogView` calls `BookRepository`
-  directly, no `BookService`.
-- **Borrow / return** mutates loan state, checks "is a copy available", and updates
-  more than one row → `BorrowDialog` calls `LoanService`, which orchestrates
-  `LoanRepository` and `BookRepository`.
+- **Catalog search** → `SearchCatalogView` calls `BookService`, which reads through
+  `BookRepository`.
+- **Borrow / return** → the loan views call `LoanService`, which checks "is a copy
+  available" and orchestrates `LoanRepository` and `BookRepository` in one transaction.
 
 ## Why
 
@@ -55,8 +44,8 @@ For SimpleLibrary that means:
   data layer and SQL out of the views. It is the only horizontal split we make inside a
   feature — anything finer is premature.
 - **Pairs naturally with the AI Unified Process.** Each use case spec maps to one feature
-  package. `/implement-uc` puts the view into `<feature>/ui` and the repository and service
-  into `<feature>/domain` with no further routing decisions.
+  package. `/use-case-implement` puts the view into `<feature>/ui` and the repository and
+  service into `<feature>/domain` with no further routing decisions.
 
 ## Layout
 
@@ -69,8 +58,8 @@ ai.unified.process.demo.book.library
 │       ├── layout             # MainLayout, navigation
 │       └── components         # shared Vaadin components
 ├── catalog                    # feature: browse / search books
-│   ├── ui                     # CatalogView, BookGrid, …
-│   └── domain                 # BookRepository, BookService, Book record
+│   ├── ui                     # SearchCatalogView, …
+│   └── domain                 # BookRepository, BookService, BookListItem record
 ├── loan                       # feature: borrow / return books
 │   ├── ui                     # BorrowDialog, ReturnDialog, ActiveLoansView, …
 │   └── domain                 # LoanRepository, LoanService, Loan record
@@ -90,18 +79,15 @@ same aggregate.
    not directly into a `loan/ui` class.
 2. **`ui` may depend on `domain` within the same feature; `domain` must not depend on
    `ui`.** This keeps the data layer headless and testable without Vaadin.
-3. **Skip the service layer for pure data access.** Views may call repositories
-   directly when there is no business logic to host. Introduce a service only once the
-   feature meets one of the criteria listed above.
-4. **Once a service exists, the view must go through it.** Mixed access (some calls
-   through the service, others bypassing it into the repository) defeats the point of
-   having the service and is the path most likely to violate invariants.
-5. **No `controller`, `service`, `repository` top-level packages.** The split is by
+3. **Views go through the service.** A view never injects a repository; mixed access
+   (some calls through the service, others bypassing it) is the path most likely to
+   violate invariants.
+4. **No `controller`, `service`, `repository` top-level packages.** The split is by
    feature first; the role of a class is expressed by its name and its position inside
    `ui` or `domain`.
-6. **`core` is for things shared by two or more features.** A class used by only one
+5. **`core` is for things shared by two or more features.** A class used by only one
    feature belongs in that feature, not in `core`.
-7. **Records and DTOs live with the code that owns them.** A `Book` record returned by
+6. **Records and DTOs live with the code that owns them.** A `Book` record returned by
    the catalog repository lives in `catalog/domain`. If another feature needs it, it
    imports from `catalog/domain`.
 
@@ -151,7 +137,8 @@ In code:
 
 - `@RolesAllowed({"MEMBER", "LIBRARIAN"})` on member-facing views.
 - `@RolesAllowed("LIBRARIAN")` on librarian-only views.
-- `@AnonymousAllowed` only on the login view.
+- `@AnonymousAllowed` only on the login view (and on `MainLayout`, so the layout can
+  render the login link; the layout is no route).
 - `@PermitAll` is **not** used — it hides the role intent and grants access to any
   authenticated user regardless of role, which is rarely what we want.
 
@@ -184,6 +171,6 @@ the navigation in `MainLayout` does not need its own access checks.
 
 ## Enforcement
 
-ArchUnit tests enforce the rules above. They live in `src/test/java/.../architecture/`
-and run as part of `./mvnw test`, so a violation breaks the build instead of relying on
-review discipline.
+ArchUnit tests enforce the package rules above. They live in `ArchitectureTest` in the
+root test package and run as part of `./mvnw test`, so a violation breaks the build instead
+of relying on review discipline.

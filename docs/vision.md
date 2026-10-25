@@ -1,4 +1,4 @@
-# Vision: SimpleLibrary
+# Vision: Book Library
 
 ## Problem
 
@@ -9,7 +9,7 @@ librarian.
 
 ## Solution
 
-SimpleLibrary is a small web application that lets members search the catalog, borrow
+Book Library is a small web application that lets members search the catalog, borrow
 books, and return them. The librarian can see all active loans at any time. The system
 keeps a clear history of who borrowed what and when.
 

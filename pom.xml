@@ -28,7 +28,7 @@
         <groovy-maven-plugin.version>2.1.1</groovy-maven-plugin.version>
 
         <playwright.version>1.61.0</playwright.version>
-        <mopo.version>0.0.6</mopo.version>
+        <dramafinder.version>1.1.0</dramafinder.version>
         <archunit.version>1.4.2</archunit.version>
         <jacoco.version>0.8.15</jacoco.version>
 
@@ -37,7 +37,7 @@
         <nullaway.version>0.13.8</nullaway.version>
         <spring-javaformat-maven-plugin.version>0.0.47</spring-javaformat-maven-plugin.version>
 
-        <db.image>postgres:latest</db.image>
+        <db.image>postgres:18-alpine</db.image>
         <db.username>ai.unified.process.demo.book.library</db.username>
         <db.password>secret</db.password>
     </properties>
@@ -183,9 +183,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>in.virit</groupId>
-            <artifactId>mopo</artifactId>
-            <version>${mopo.version}</version>
+            <groupId>org.vaadin.addons</groupId>
+            <artifactId>dramafinder</artifactId>
+            <version>${dramafinder.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -424,10 +425,12 @@
                 <version>${spring-javaformat-maven-plugin.version}</version>
                 <executions>
                     <execution>
-                        <phase>validate</phase>
+                        <!-- apply, not validate: code an AI agent writes is formatted on every build
+                             instead of failing it -->
+                        <phase>process-sources</phase>
                         <inherited>true</inherited>
                         <goals>
-                            <goal>validate</goal>
+                            <goal>apply</goal>
                         </goals>
                     </execution>
                 </executions>

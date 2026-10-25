@@ -1,77 +1,65 @@
-# SimpleLibrary Tutorial — Building a Vaadin + jOOQ App with the AI Unified Process
+# Book Library Tutorial — Building a Web App with the AI Unified Process
 
-This tutorial walks through building **SimpleLibrary**, a small book lending application,
-from a blank canvas to a working, tested Vaadin + jOOQ app. It demonstrates the
-[AI Unified Process](https://unifiedprocess.ai) end-to-end by chaining the skills
-provided by `aiup-core` and the layer plugins `aiup-flyway`, `aiup-jooq`,
-`aiup-spring-boot`, and `aiup-vaadin`.
+This tutorial walks through building the **Book Library**, a small book lending application, from
+a blank canvas to a tested Vaadin + jOOQ app. It demonstrates the
+[AI Unified Process](https://unifiedprocess.ai) end-to-end by chaining the skills of `aiup-core`
+and the layer plugins for Flyway, jOOQ, Spring Boot, and Vaadin in Claude Code. The same
+walkthrough is on the web at [unifiedprocess.ai/tutorial.html](https://unifiedprocess.ai/tutorial.html).
 
-Each step below corresponds to one slash command you run inside Claude Code. The output
-of each step is a concrete artifact (a markdown file, a diagram, a SQL script, Java code,
-or a test class) that the next step builds on.
+Each step corresponds to one slash command and produces a concrete artifact (a markdown spec, a
+diagram, an architecture document, a SQL script, Java code, or a test class) that the next step
+builds on.
 
 > **Prerequisites**
 >
 > - Java 25 (the project ships `mvnw`)
 > - Docker (or Testcontainers Cloud) for the PostgreSQL container
-> - Claude Code with `aiup-core` and the layer plugins of this stack installed (see below)
-> - The starter project from this repository, freshly cloned
-
-SimpleLibrary combines Flyway, jOOQ, Spring Boot, and Vaadin Flow, so it needs one plugin
-per technical layer next to `aiup-core`:
-
-```
-/plugin marketplace add ai-unified-process/marketplace
-/plugin install aiup-core
-/plugin install aiup-flyway
-/plugin install aiup-jooq
-/plugin install aiup-spring-boot
-/plugin install aiup-vaadin
-```
-
-> **Still on `aiup-vaadin-jooq`?** The combined plugin is deprecated and will be removed
-> with `aiup-core` 4.0.0. [Layer plugins](https://unifiedprocess.ai/layer-plugins.html#moving-an-existing-project)
-> explains the switch and maps the old commands to the new ones. Do not install both in
-> one project.
+> - Claude Code with `aiup-core` and the layer plugins of the Book Library stack:
+>
+>   ```
+>   /plugin marketplace add ai-unified-process/marketplace
+>   /plugin install aiup-core
+>   /plugin install aiup-flyway
+>   /plugin install aiup-jooq
+>   /plugin install aiup-spring-boot
+>   /plugin install aiup-vaadin
+>   ```
+>
+> - This starter project, freshly cloned
+>
+> Still on the combined `aiup-vaadin-jooq` plugin? It is deprecated and will be removed with
+> aiup-core 4.0.0; see [Layer plugins](https://unifiedprocess.ai/layer-plugins.html).
 
 ## Why a process at all?
 
-AI agents are great at producing code, but without structure they tend to improvise.
-The AI Unified Process fixes that by giving the AI a **predefined chain of artifacts** to
-produce, each one narrowing the design space for the next. By the time you reach
-`/implement-uc`, the AI has a vision, a use case spec, an entity model, and a recorded
-architecture to anchor its output —
-so the code it writes is grounded in your domain, not in a generic template.
-
-The flow we follow:
+AI agents are great at producing code, but without structure they tend to improvise. The AI
+Unified Process gives the AI a **predefined chain of artifacts** to produce, each one narrowing
+the design space for the next. By the time you reach `/use-case-implement`, the AI has a vision,
+a use case spec, an entity model, and a stack file that names the skill for every layer, so the
+code it writes is grounded in your domain, not in a generic template.
 
 ```
-vision.md → /requirements → /entity-model → /use-case-diagram → /use-case-spec
-   → /architecture → /implement-uc → /test-uc → /coverage-uc
+vision.md → /requirements → /entity-model
+  → /use-case-diagram → /use-case-spec → /spec-review
+  → /stack → /use-case-implement
+  → /use-case-test → /use-case-coverage
 ```
 
 ## Step 1 — Review the Vision
 
-The vision is the only artifact you write by hand. Everything else is generated from it.
-For this tutorial the vision is already prepared at [`docs/vision.md`](docs/vision.md) —
-open it and read it before continuing. It is the source of truth for every step that
-follows.
+The vision is the only artifact you write by hand. Everything else is generated from it. For this
+tutorial it is already prepared at [`docs/vision.md`](docs/vision.md); read it before continuing.
+Keep a vision short — one page: the problem, the solution, the target users, the goals, and the
+non-goals.
 
-The vision describes the **problem**, the **solution**, the **target users**, the
-**goals**, and the **non-goals**. Keep it short — one page is plenty. If you adapt this
-tutorial to your own project, that is the structure to follow.
+> **Tip.** Be explicit about non-goals. Calling out what is **out of scope** (no payments, no
+> reservations, no self service sign-up) tells the AI not to scaffold features you do not need yet.
 
-> **Tip.** Be explicit about non-goals. Calling out what is **out of scope** (no payments,
-> no reservations, no self service sign-up) tells the AI not to scaffold features you do
-> not need yet.
-
-> **Pre-seeded security.** This starter project already ships Spring Security, an
-> `app_user` table (identity only), a login view, and two seeded accounts (see the
+> **Pre-seeded security.** The starter ships Spring Security, an `app_user` table (identity only),
+> a login view, and two seeded accounts (`librarian` / `librarian`, `alice` / `alice`; see the
 > [README](README.md#pre-seeded-security)). The tutorial therefore does **not** cover
-> authentication — your generated views just need to declare `@RolesAllowed("MEMBER")`,
-> `@RolesAllowed("LIBRARIAN")`, or both. Treat `app_user` as a given; the `member` table
-> is a *domain* entity that the tutorial creates and links to `app_user` via a
-> `user_id` foreign key.
+> authentication; your generated views just need `@RolesAllowed("MEMBER")`,
+> `@RolesAllowed("LIBRARIAN")`, or both.
 
 ## Step 2 — Generate the Requirements Catalog
 
@@ -79,17 +67,16 @@ tutorial to your own project, that is the structure to follow.
 /requirements
 ```
 
-This skill reads `docs/vision.md` and produces a structured requirements catalog:
+The skill reads `docs/vision.md`, asks up to five clarifying questions where the vision leaves a
+decision open, and writes the requirements catalog to `docs/requirements.md` and the domain terms
+to `docs/glossary.md`:
 
-- **Functional requirements** as user stories (e.g. *As a member, I want to search the
-  catalog so that I can find a book quickly*).
-- **Non-functional requirements** (performance, usability, maintainability).
-- **Constraints** (the tech stack from the README, the "no authentication" non-goal,
-  the "no multi-branch" non-goal, …).
+- **Functional requirements** as user stories (*As a member, I want to search the catalog so that
+  I can find a book quickly*).
+- **Non-functional requirements** (performance, usability, maintainability), each measurable.
+- **Constraints** (the tech stack, the non-goals from the vision, …).
 
-The catalog is written to `docs/requirements.md`. Review it before continuing — this is
-your last chance to course-correct cheaply. If a story is missing or a non-goal slipped
-in as a requirement, fix it now. Every later step compounds on this list.
+Review the catalog before continuing; this is your last chance to course-correct cheaply.
 
 ## Step 3 — Build the Entity Model
 
@@ -97,25 +84,17 @@ in as a requirement, fix it now. Every later step compounds on this list.
 /entity-model
 ```
 
-From the requirements, the skill identifies the **domain entities** and produces a
-Mermaid ER diagram in `docs/architecture/entity-model.md`, including:
-
-- Entities (`Book`, `Member`, `Loan`)
-- Attributes with types
-- Relationships and cardinalities
-- Validation rules (required fields, lengths, uniqueness)
-
-For SimpleLibrary you should expect roughly:
+From the requirements the skill writes `docs/entity_model.md`: a Mermaid ER diagram of the
+entities and their relationships, plus one attribute table per entity with data types, lengths
+or precision, and validation rules. For the Book Library expect roughly:
 
 - `Book` (id, title, author, isbn, copies)
-- `Member` (id, user_id, name, email) — a library patron, linked 1:1 to an existing
-  `app_user` row via `user_id`
+- `Member` (id, user_id, name, email) — a library patron, linked 1:1 to an existing `app_user` row
 - `Loan` (id, book_id, member_id, borrowed_at, returned_at)
 
-The `AppUser` entity (id, username, password_hash, role) is part of the starter and
-does **not** need to appear in the entity model — treat it as an external boundary.
-Verify the cardinalities — a `Loan` should reference exactly one `Book` and one
-`Member`, and a `Member` can have many `Loan`s.
+The `AppUser` entity (id, username, password_hash, role) is part of the starter and does not need
+its own section in the entity model; treat it as an external boundary that `member.user_id`
+references.
 
 ## Step 4 — Draw the Use Case Diagram
 
@@ -123,9 +102,8 @@ Verify the cardinalities — a `Loan` should reference exactly one `Book` and on
 /use-case-diagram
 ```
 
-The skill renders a PlantUML use case diagram from the requirements at
-`docs/architecture/use-case-diagram.puml`. It shows the two actors (**Member**,
-**Librarian**) and the use cases they participate in:
+The skill writes a PlantUML use case diagram to `docs/use_cases.puml` with the two actors
+(**Member**, **Librarian**) and their use cases:
 
 - UC-001 Search catalog
 - UC-002 Borrow book
@@ -133,9 +111,8 @@ The skill renders a PlantUML use case diagram from the requirements at
 - UC-004 View active loans (Librarian)
 - UC-005 Manage catalog (Librarian)
 
-The exact numbering depends on what the requirements step produced. Use the diagram to
-confirm coverage: every requirement should land on at least one use case, and every use
-case should trace back to a requirement.
+Every requirement should land on at least one use case, and every use case should trace back to
+a requirement.
 
 ## Step 5 — Write the First Use Case Specification
 
@@ -143,168 +120,109 @@ case should trace back to a requirement.
 /use-case-spec UC-001
 ```
 
-Pick the use case that **unblocks the others** to go first. For SimpleLibrary that is
-**UC-001 Search catalog** — it has no preconditions, gives the member something to do
-the moment they land on the page, and produces the data structures that UC-002 (Borrow
-book) needs.
+Pick the use case that **unblocks the others** first: UC-001 Search catalog has no preconditions
+and produces the data structures UC-002 needs. The skill writes
+`docs/use_cases/UC-001-search-catalog.md` with the actors, the trigger, the requirements it links,
+preconditions, the main success scenario, alternative flows, success and failure postconditions,
+and business rules (BR-001, …). It starts with `Status: Draft`.
 
-The skill writes `docs/use_cases/UC-001-search-catalog.md` with:
+> **Be concrete.** "The system shows the books" is not enough; "the system shows the books with
+> the columns Title, Author, ISBN, and Available Copies, sorted by title ascending" is. Name what
+> the actor sees, not the widget: `/spec-review` flags a Grid or a button colour as the wrong level.
 
-- Actors and stakeholders
-- Preconditions / postconditions
-- Main success flow (numbered steps)
-- Alternative flows (no results, partial match)
-- Acceptance criteria
-
-This spec is the contract for the rest of the chain. Keep it concrete: a step like *"the
-system shows the books"* is not enough — *"the system shows a Grid with columns Title,
-Author, ISBN, and Available Copies, sorted by Title ascending"* is.
-
-> Repeat this step once per use case as you grow the app. The tutorial implements UC-001
-> end-to-end first; you can come back for UC-002 and UC-003 later using the same chain.
+> **Review before you implement.** Run `/spec-review UC-001` once the spec reads well. It checks
+> that every reference resolves and that the use case agrees with the requirements, the entity
+> model, and the other use cases. It only reports; fix the findings with `/use-case-spec` and
+> review again. Once the review is clean, set the Status line to `Approved`.
 
 ## Step 6 — Record the Architecture
 
 ```
-/architecture
+/stack
 ```
 
-Before the first line of code, the skill records which layer skill builds and tests each
-technical layer. It detects Flyway, jOOQ, Spring Boot, and Vaadin from the `pom.xml` and the
-source tree of the starter and writes the **Development View** to
-`docs/architecture/development.md`, together with `docs/architecture/README.md`, an index of
-the 4+1 architecture views. The Development View holds:
+The skill detects Flyway, jOOQ, Spring Boot, and Vaadin from the `pom.xml` and the source tree
+and writes `docs/architecture/stack.md`: the Layers table (migration `/flyway-schema`,
+persistence `/jooq-persistence`, service `/spring-service`, UI `/vaadin-flow-ui`, E2E
+`/vaadin-e2e-test`, plus the test skill of each layer), the integration layer (UI: the
+Browserless tests of the view run in process against the real database), the E2E scope, the
+module layout, and the commands.
 
-- **The Layers table** — migration with `/flyway-schema`, persistence with
-  `/jooq-persistence`, service with `/spring-service`, UI with `/vaadin-flow-ui`, the test
-  skill of each layer that has one, and the E2E layer with `/vaadin-e2e-test`
-- **The integration layer** — UI: the topmost layer whose tests run in process against the
-  real database, which with Vaadin Flow are the Browserless tests of the view
-- **The module layout and commands** — where the code of each layer lives, and how to build
-  and test it
-
-The starter already ships a `docs/architecture.md` with its package conventions; the skill
-reads it as input and asks whether to move it into the folder as the Development View, so
-the project keeps one architecture document. You run this step once per project, and again
-only when a layer changes. Review the file
-like any other artifact: the next three steps read it.
-
-> **Entry layers.** Every SimpleLibrary use case is offered through the UI, so the
-> specifications need no `**Layers:**` line. In an app that also has a REST API, a use case
-> offered through only one of them says so with a line such as `**Layers:** UI`.
+The starter's [`docs/architecture.md`](docs/architecture.md) records the package-by-feature layout
+and that every feature has a service; `/stack` reads it as input and leaves it where it is.
 
 ## Step 7 — Implement the Use Case
 
 ```
-/implement-uc UC-001
+/use-case-implement UC-001
 ```
 
-This is where the chain pays off. The skill reads the use case spec, the requirements it
-links, the entity model, and the Development View, asks about any gaps in the specification
-in one round, then runs the layer skills bottom-up. Each layer hands the types and methods
-it created over to the next:
+The skill reads the use case, the requirements it links, the entity model, and the stack file,
+asks about gaps in the specification in one round, then runs the layer skills bottom-up:
 
-- **`/flyway-schema`** writes a versioned Flyway script under
-  `src/main/resources/db/migration/`. The starter already contains
-  `V001__create_app_user.sql`, so it adds a new version (e.g.
-  `V002__create_member_book_loan.sql`) with the tables, primary and foreign keys (including
-  `member.user_id → app_user.id`), and the `NOT NULL`, `UNIQUE`, and `CHECK` constraints
-  from the entity model.
-- **`/jooq-persistence`** writes a jOOQ-based repository (`BookRepository`) against the
-  classes jOOQ generates from the migration, with the results projected into Java records.
-- **`/spring-service`** writes the service with the transaction boundaries and the business
-  rules of the use case.
-- **`/vaadin-flow-ui`** writes the Vaadin view (`SearchCatalogView`), wired to `MainLayout`
-  and calling the service directly.
+- `/flyway-schema` adds `V002__…sql` next to the starter's `V001__create_app_user.sql`, with the
+  tables, keys (including `member.user_id → app_user.id`), and constraints.
+- `/jooq-persistence` writes `BookRepository` against the generated jOOQ classes, projecting into
+  Java records.
+- `/spring-service` writes `BookService` with the transaction boundary and the business rules.
+- `/vaadin-flow-ui` writes `SearchCatalogView`, wired to `MainLayout` and calling the service.
 
-The skill runs the build in between, so the jOOQ classes are current before the repository
-is written. It writes no tests. The generated code follows the project conventions you saw
-in the README: feature packages split into `ui` and `domain`, jOOQ for data access, no
-Spring Data, no JPA.
-
-Run the app via `TestApplication` from your IDE and click through the flow. You should be
-able to type a query, see the Grid filter, and see the results sorted as the spec requires.
+It writes no tests. Run the app via `TestApplication` from your IDE, sign in as `alice` / `alice`,
+and open the catalog. It is still empty: no use case adds books yet, and the production migrations
+hold no demo data, so you see the empty-state message the spec names. The books arrive with the
+test data of the next step.
 
 ## Step 8 — Write the Use Case Tests
 
 ```
-/test-uc UC-001
+/use-case-test UC-001
 ```
 
-The skill tests the use case once, in the integration layer. With Vaadin Flow that is the
-UI, so `/vaadin-flow-ui-test` writes `UC001SearchCatalogTest` under `src/test/java`,
-extending `SpringBrowserlessTest`. It drives the view without a browser, but against the
-real service and database:
+The skill tests the use case once, in the integration layer. With Vaadin Flow that is the UI, so
+`/vaadin-flow-ui-test` writes `UC001SearchCatalogTest` extending `AbstractBrowserlessTest`. It
+drives the view without a browser, but against the real service and database, and covers every
+alternative flow and business rule. Each test method carries `@UseCase(id = "UC-001")`; the test
+data goes into a repeatable migration under `src/test/resources/db/testdata/`.
 
-- Navigate to the view
-- Look up the search field and the grid
-- Type a query, assert the grid shows the expected rows
-- Cover every alternative flow and business rule from the spec (empty result, etc.)
-
-Each test method carries `@UseCase(id = "UC-001")`, and the test data goes into a
-repeatable migration under `src/test/resources/db/testdata/`. Because these tests run
-through every layer below, the repository and the service get no tests of their own.
-
-Run them with `./mvnw test`. They are fast — under a second per test — so they form the
-inner feedback loop while you iterate on the view.
+Run the tests with `./mvnw test`. Then start `TestApplication` again: it loads the same test data,
+so now you can type a query, see the grid filter, and see the results sorted as the spec requires.
 
 ## Step 9 — Write the End-to-End Test
 
 ```
-/test-uc UC-001 e2e
+/use-case-test UC-001 e2e
 ```
 
-The `/test-uc` run from step 8 ends with the E2E layer, so the test is usually already
-there; naming the layer writes or reconciles only this one. `/vaadin-e2e-test` produces a
-Playwright + Drama Finder test, `UC001SearchCatalogIT`, extending
-`AbstractBasePlaywrightIT`. It boots the full Spring Boot app on a random port and drives a
-real browser through the use case:
+With the E2E scope *Use cases and test cases*, the run from step 8 already ends with the E2E
+layer; naming it writes or reconciles only this one. `/vaadin-e2e-test` produces a Playwright +
+Drama Finder test, `UC001SearchCatalogIT`, extending `AbstractBasePlaywrightIT`. It boots the app
+on a random port, signs in through the login view, and drives a real browser through the use case.
 
-- Start the app with a fresh database
-- Open the catalog page
-- Type a search query
-- Assert the visible rows match what the use case spec requires
-
-Run with `./mvnw verify` to execute the integration tests. This is your outer feedback
-loop — slower than the browserless tests, but it proves that the JavaScript, CSS, routing,
-and database layers all line up.
+Run it with `./mvnw verify`. This is your outer feedback loop: slower than the Browserless tests,
+but it proves that the JavaScript, CSS, routing, and database layers all line up.
 
 ## What you have at the end
 
-After running the full chain for UC-001 you have:
+A documented vision and requirements catalog, an entity model and use case diagram covering the
+whole app, a stack file of the layers, and for UC-001 a spec, a migration, an implementation across
+four layers, Browserless tests in the integration layer, and an end-to-end test.
 
-- A documented vision and requirements catalog
-- An entity model and use case diagram covering the whole app
-- A Development View that records the layers and the skills that build and test them
-- A use case spec, a database migration, an implementation across four layers,
-  Browserless tests in the integration layer, and an end-to-end test for the first use case
-- A repeatable workflow for adding the next use case (UC-002 Borrow book, UC-003 Return
-  book, …)
-
-To add a new use case, you only need steps **5, 7, 8, 9** — the requirements, entity
-model, diagram, and Development View cover the whole app, so they do not need to be
-redone. When a use case needs new tables or columns, `/implement-uc` adds a new `V003__…`
-migration as its first layer.
-
-To change an existing use case — a new feature, a change request, or a bug — edit the
-specification, then re-run steps 7, 8, and 9. `/implement-uc` finds the existing view,
-service, and repository and reconciles them with what the spec now requires, and `/test-uc`
-updates the existing test classes rather than adding second ones. A change that needs a new
-column gets a new migration; never edit one that has already been applied.
+- **Add the next use case:** steps 5, 7, 8, 9. When it needs new tables or columns,
+  `/use-case-implement` adds a new `V003__…` migration as its first layer.
+- **Change an existing use case:** edit the specification, then re-run steps 7, 8, and 9; the skills
+  reconcile the existing code and tests instead of adding second ones. Never edit a migration that
+  has already been applied.
 
 ## Where to go next
 
-- Run `/coverage-uc UC-001` to audit what you just built against its specification: it
-  lists which scenario steps, alternative flows, and business rules have code and tests
-  behind them, and which are still open.
-- Run the chain again for UC-002 Borrow book — it will reuse `Book` and `Member` and
-  add rows to `Loan`.
-- Continue with UC-003 Return book to close the lifecycle.
-- Add the librarian-facing UC-004 View active loans for the operational view.
-- Chain several use cases into one journey with `/test-case`, then automate it with
-  `/test-uc TC-001`.
-- Read [Layer plugins](https://unifiedprocess.ai/layer-plugins.html) for how the layers
-  combine and what the four construction commands own.
+- Run `/use-case-coverage UC-001` to audit what you built against its specification.
+- Run the chain again for UC-002 Borrow book; it reuses `Book` and `Member` and adds rows to `Loan`.
+  The seeded account `alice` has no `member` row yet, so its test data links a member of its own; to
+  borrow as alice in the running app, give her one in the test data or with a member-management use
+  case.
+- Continue with UC-003 Return book and the librarian-facing UC-004 View active loans.
+- Once a few use cases exist, run `/test-case UC-001 UC-002 UC-003` to write a TC-001 journey,
+  automate it with `/test-case-implement TC-001`, and audit it with `/test-case-coverage TC-001`.
 
 The full methodology and the catalog of skills are documented at
 [unifiedprocess.ai](https://unifiedprocess.ai).
