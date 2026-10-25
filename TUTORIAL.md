@@ -6,9 +6,9 @@ a blank canvas to a tested Vaadin + jOOQ app. It demonstrates the
 and the layer plugins for Flyway, jOOQ, Spring Boot, and Vaadin in Claude Code. The same
 walkthrough is on the web at [unifiedprocess.ai/tutorial.html](https://unifiedprocess.ai/tutorial.html).
 
-Each step corresponds to one slash command and produces a concrete artifact (a markdown spec, a
-diagram, an architecture document, a SQL script, Java code, or a test class) that the next step
-builds on.
+Apart from the vision you review first and the test run at the end, each step is one slash command
+and produces a concrete artifact (a markdown spec, a diagram, an architecture document, a SQL script,
+Java code, or a test class) that the next step builds on.
 
 > **Prerequisites**
 >
@@ -150,13 +150,16 @@ and business rules (BR-001, …). It starts with `Status: Draft`.
 The skill detects Flyway, jOOQ, Spring Boot, and Vaadin from the `pom.xml` and the source tree
 and writes `docs/architecture/stack.md`: the Layers table (migration `/flyway-schema`,
 persistence `/jooq-persistence`, service `/spring-service`, UI `/vaadin-flow-ui`, E2E
-`/vaadin-e2e-test`, plus the test skill of each layer), the integration layer (UI: the
-Browserless tests of the view run in process against the real database), the E2E scope, the
+`/vaadin-e2e-test`, plus the test skill of each layer), the Integration layer table (a use
+case offered through the UI is tested in the UI, whose Browserless tests run in process against the
+real database; one offered through the service alone, such as a scheduled job, in the service), the
+E2E scope, the
 module layout, and the commands.
 
 The skill detects the layers but not how many browser tests you want, so it asks one question: the
-E2E scope. Answer *Use cases and test cases*; steps 8 and 9 rely on it. With *Test cases only*,
-`/use-case-test` writes no `UC001SearchCatalogIT`, and step 9 has to name the layer explicitly.
+E2E scope. Answer *Use cases and test cases*; step 8 then writes the browser test that step 9 runs. With
+*Test cases only*, `/use-case-test` writes no `UC001SearchCatalogIT`, and you ask for it with
+`/use-case-test UC-001 e2e`.
 
 > **Entry layers.** Every Book Library use case is offered through the UI, so the specifications need
 > no `**Layers:**` line. In an app that also has a REST API, a use case offered through only one of
@@ -209,21 +212,24 @@ their own. Run them with `./mvnw test`. They are fast, under a second per test, 
 inner feedback loop while you iterate on the view. Then start `TestApplication` again (or `./mvnw spring-boot:test-run`): it loads the same test data,
 so now you can type a query, see the grid filter, and see the results sorted as the spec requires.
 
-## Step 9 — Write the End-to-End Test
+## Step 9 — Run the End-to-End Test
 
 ```
-/use-case-test UC-001 e2e
+./mvnw verify
 ```
 
-With the E2E scope *Use cases and test cases*, the run from step 8 already ends with the E2E
-layer; naming it writes or reconciles only this one. `/vaadin-e2e-test` produces a Playwright +
+With the E2E scope *Use cases and test cases*, the `/use-case-test` run of step 8 has already
+written the browser test: `/vaadin-e2e-test` produced a Playwright +
 Drama Finder test, `UC001SearchCatalogIT`, extending `AbstractBasePlaywrightIT`. It boots the app
 on a random port, signs in through the login view, and drives a real browser through the use case.
 The empty-catalog flow has no browser test: the running app has one data set, and the Browserless
 test already covers it.
 
-Run it with `./mvnw verify`. This is your outer feedback loop: slower than the Browserless tests,
-but it proves that the JavaScript, CSS, routing, and database layers all line up.
+`./mvnw verify` runs the Browserless tests and then the integration tests. This is your outer
+feedback loop: slower than the Browserless tests, but it proves that the JavaScript, CSS, routing,
+and database layers all line up. To write or reconcile only the browser test, for example after a
+change to the view, run `/use-case-test UC-001 e2e`; with the E2E scope *Test cases only*, that is
+how you ask for a use case browser test at all.
 
 ## What you have at the end
 
@@ -251,6 +257,10 @@ four layers, Browserless tests in the integration layer, and an end-to-end test.
   The seeded account `alice` has no `member` row yet, so its test data links a member of its own; to
   borrow as alice in the running app, give her one in the test data or with UC-006 Manage members.
 - Continue with UC-003 Return book and the librarian-facing UC-004 View active loans.
+- Before UC-005 Manage catalog, decide what removing a book means once it has been borrowed: its
+  loans keep pointing at it, and the loan history has to stay. Either only a book that was never
+  borrowed can be removed, or a book is withdrawn from the catalog instead of deleted; record the
+  choice with `/requirements` and `/entity-model` before you run `/use-case-spec UC-005`.
 - Once a few use cases exist, run `/test-case UC-001 UC-002 UC-003` to write a TC-001 journey,
   automate it with `/test-case-implement TC-001`, and audit it with `/test-case-coverage TC-001`.
 
