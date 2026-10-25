@@ -4,4 +4,5 @@
 .project
 src/main/frontend/generated
 src/main/frontend/index.html
+src/main/bundles
 target

@@ -58,8 +58,9 @@ non-goals.
 > **Pre-seeded security.** The starter ships Spring Security, an `app_user` table (identity only),
 > a login view, and two seeded accounts (`librarian` / `librarian`, `alice` / `alice`; see the
 > [README](README.md#pre-seeded-security)). The tutorial therefore does **not** cover
-> authentication; your generated views just need `@RolesAllowed("MEMBER")`,
-> `@RolesAllowed("LIBRARIAN")`, or both.
+> authentication; your generated views just need `@RolesAllowed({"MEMBER", "LIBRARIAN"})` for the
+> views a member uses (the librarian sees them too, as [`docs/architecture.md`](docs/architecture.md)
+> records) or `@RolesAllowed("LIBRARIAN")` for the librarian-only ones.
 
 ## Step 2 — Generate the Requirements Catalog
 
@@ -72,7 +73,7 @@ decision open, and writes the requirements catalog to `docs/requirements.md` and
 to `docs/glossary.md`:
 
 - **Functional requirements** as user stories (*As a member, I want to search the catalog so that
-  I can find a book quickly*).
+  I can find a book without asking the librarian*).
 - **Non-functional requirements** (performance, usability, maintainability), each measurable.
 - **Constraints** (the tech stack, the non-goals from the vision, …).
 
@@ -110,6 +111,7 @@ The skill writes a PlantUML use case diagram to `docs/use_cases.puml` with the t
 - UC-003 Return book
 - UC-004 View active loans (Librarian)
 - UC-005 Manage catalog (Librarian)
+- UC-006 Manage members (Librarian)
 
 Every requirement should land on at least one use case, and every use case should trace back to
 a requirement.
@@ -130,7 +132,9 @@ and business rules (BR-001, …). It starts with `Status: Draft`.
 > the columns Title, Author, ISBN, and Available Copies, sorted by title ascending" is. Name what
 > the actor sees, not the widget: `/spec-review` flags a Grid or a button colour as the wrong level.
 
-> **Review before you implement.** Run `/spec-review UC-001` once the spec reads well. It checks
+> **Review before you implement.** Run `/spec-review UC-001` once the spec reads well; name the use
+> case, because without an id the review covers the whole project and reports every use case of the
+> diagram that has no specification yet as an error. It checks
 > that every reference resolves and that the use case agrees with the requirements, the entity
 > model, and the other use cases. It only reports; fix the findings with `/use-case-spec` and
 > review again. Once the review is clean, set the Status line to `Approved`.
@@ -182,7 +186,9 @@ The skill tests the use case once, in the integration layer. With Vaadin Flow th
 `/vaadin-flow-ui-test` writes `UC001SearchCatalogTest` extending `AbstractBrowserlessTest`. It
 drives the view without a browser, but against the real service and database, and covers every
 alternative flow and business rule. Each test method carries `@UseCase(id = "UC-001")`; the test
-data goes into a repeatable migration under `src/test/resources/db/testdata/`.
+data goes into a repeatable migration under `src/test/resources/db/testdata/`. Once that test data
+fills the catalog, an empty catalog can no longer be arranged without touching shared rows, so the
+test of an empty-catalog flow checks the message the view shows for an empty grid.
 
 Run the tests with `./mvnw test`. Then start `TestApplication` again: it loads the same test data,
 so now you can type a query, see the grid filter, and see the results sorted as the spec requires.
@@ -218,8 +224,7 @@ four layers, Browserless tests in the integration layer, and an end-to-end test.
 - Run `/use-case-coverage UC-001` to audit what you built against its specification.
 - Run the chain again for UC-002 Borrow book; it reuses `Book` and `Member` and adds rows to `Loan`.
   The seeded account `alice` has no `member` row yet, so its test data links a member of its own; to
-  borrow as alice in the running app, give her one in the test data or with a member-management use
-  case.
+  borrow as alice in the running app, give her one in the test data or with UC-006 Manage members.
 - Continue with UC-003 Return book and the librarian-facing UC-004 View active loans.
 - Once a few use cases exist, run `/test-case UC-001 UC-002 UC-003` to write a TC-001 journey,
   automate it with `/test-case-implement TC-001`, and audit it with `/test-case-coverage TC-001`.
