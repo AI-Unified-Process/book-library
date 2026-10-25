@@ -58,9 +58,10 @@ non-goals.
 > **Pre-seeded security.** The starter ships Spring Security, an `app_user` table (identity only),
 > a login view, and two seeded accounts (`librarian` / `librarian`, `alice` / `alice`; see the
 > [README](README.md#pre-seeded-security)). The tutorial therefore does **not** cover
-> authentication; your generated views just need `@RolesAllowed({"MEMBER", "LIBRARIAN"})` for the
-> views a member uses (the librarian sees them too, as [`docs/architecture.md`](docs/architecture.md)
-> records) or `@RolesAllowed("LIBRARIAN")` for the librarian-only ones.
+> authentication; your generated views just need `@RolesAllowed("MEMBER")` for the member-only views
+> (borrowing, returning, my loans: a librarian has no `member` row and does not borrow, as
+> [`docs/architecture.md`](docs/architecture.md) records), `@RolesAllowed("LIBRARIAN")` for the
+> librarian-only ones, and `@RolesAllowed({"MEMBER", "LIBRARIAN"})` for the catalog search both use.
 
 ## Step 2 — Generate the Requirements Catalog
 
@@ -90,7 +91,7 @@ entities and their relationships, plus one attribute table per entity with data 
 or precision, and validation rules. For the Book Library expect roughly:
 
 - `Book` (id, title, author, isbn, copies)
-- `Member` (id, user_id, name, email) — a library patron, linked 1:1 to an existing `app_user` row
+- `Member` (id, user_id, name, email) — a library member, linked 1:1 to an existing `app_user` row
 - `Loan` (id, book_id, member_id, borrowed_at, returned_at)
 
 The `AppUser` entity (id, username, password_hash, role, created_at) is part of the starter and does not need

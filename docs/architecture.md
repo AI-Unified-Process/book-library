@@ -101,12 +101,12 @@ Authentication and authorization are part of the architecture, not a separate fe
   data only: `id`, `username`, `password_hash`, `role` (`MEMBER` or `LIBRARIAN`),
   `created_at`. No name, no email, no profile data — those belong to a domain entity.
 - **`member` is a domain entity, not the identity.** Once the `member` feature is
-  introduced (during the tutorial), the `member` table carries the patron's profile
+  introduced (during the tutorial), the `member` table carries the member's profile
   (name, email, …) and a `user_id` foreign key into `app_user`. A librarian is an
   `app_user` with role `LIBRARIAN` and **no** `member` row — librarians do not borrow
-  books, so they do not need a patron profile.
-- **Loans reference `member.id`, not `app_user.id`.** A loan belongs to a library
-  patron, which is a `member`. The path from "currently logged-in user" to "their
+  books, so they do not need a member profile.
+- **Loans reference `member.id`, not `app_user.id`.** A loan belongs to a
+  `member`. The path from "currently logged-in user" to "their
   loans" goes through `member.user_id`.
 - **No self service sign-up.** A librarian creates member accounts (a domain action
   that inserts an `app_user` row and a `member` row in the same transaction). The
@@ -128,14 +128,18 @@ the current user.
 Authorization lives on the view, expressed with JSR-250 annotations. The default is
 deny — every routable view must declare who can reach it.
 
-| Role         | Views                                                   |
-|--------------|---------------------------------------------------------|
-| `MEMBER`     | Search catalog, Borrow book, Return book, My loans      |
-| `LIBRARIAN`  | Everything a member sees, plus Active loans, Manage catalog, Manage members |
+| Role         | Views                                                          |
+|--------------|----------------------------------------------------------------|
+| `MEMBER`     | Search catalog, Borrow book, Return book, My loans             |
+| `LIBRARIAN`  | Search catalog, Active loans, Manage catalog, Manage members   |
+
+A librarian has no `member` row and does not borrow books, so Borrow book, Return book,
+and My loans are for members only. Search catalog is the one view both roles share.
 
 In code:
 
-- `@RolesAllowed({"MEMBER", "LIBRARIAN"})` on member-facing views.
+- `@RolesAllowed({"MEMBER", "LIBRARIAN"})` on the views both roles use (Search catalog).
+- `@RolesAllowed("MEMBER")` on member-only views (Borrow book, Return book, My loans).
 - `@RolesAllowed("LIBRARIAN")` on librarian-only views.
 - `@AnonymousAllowed` only on the login view (and on `MainLayout`, so the layout can
   render the login link; the layout is no route).
@@ -151,18 +155,17 @@ the navigation in `MainLayout` does not need its own access checks.
   `AppUserDetailsService`, `AppUserDetails`, `Role`, `LoginView`, `SecuritySeed`, and
   the `CurrentUser` helper. `CurrentUser` reads Spring's `SecurityContextHolder`
   directly (no Vaadin), so it can be injected from `domain` code as well as views.
-- Role-aware logic inside a feature (e.g. "a member sees only their own loans, a
-  librarian sees everyone's") lives in that feature's `domain` layer and reads the
+- User-scoped logic inside a feature (e.g. "a member sees only their own loans") lives in that feature's `domain` layer and reads the
   current `app_user.id` via `CurrentUser`, then joins through `member.user_id` when it
-  needs the patron. Views do not branch on roles; they call a service method that
+  needs the member. Views do not branch on roles; they call a service method that
   already scopes the query.
 
 ### Why this shape
 
 - **Identity vs. domain are different concerns.** Mixing `username`/`password_hash`
   into `member` couples a domain entity to authentication mechanics. Splitting them
-  means we can change auth (OAuth, SSO, …) without touching the patron model, and we
-  can have non-patron users (the librarian) without inventing a fake `member` row.
+  means we can change auth (OAuth, SSO, …) without touching the member model, and we
+  can have users who are not members (the librarian) without inventing a fake `member` row.
 - **Declarative access on views.** `@RolesAllowed` keeps the rule next to the view it
   protects and lets Vaadin handle menu visibility for free.
 - **Scoping in the domain.** Putting the "only my loans" rule in the service means the
