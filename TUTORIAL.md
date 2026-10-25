@@ -153,6 +153,10 @@ persistence `/jooq-persistence`, service `/spring-service`, UI `/vaadin-flow-ui`
 Browserless tests of the view run in process against the real database), the E2E scope, the
 module layout, and the commands.
 
+The skill detects the layers but not how many browser tests you want, so it asks one question: the
+E2E scope. Answer *Use cases and test cases*; steps 8 and 9 rely on it. With *Test cases only*,
+`/use-case-test` writes no `UC001SearchCatalogIT`, and step 9 has to name the layer explicitly.
+
 The starter's [`docs/architecture.md`](docs/architecture.md) records the package-by-feature layout
 and that every feature has a service; `/stack` reads it as input and leaves it where it is.
 
@@ -188,10 +192,11 @@ The skill tests the use case once, in the integration layer. With Vaadin Flow th
 `/vaadin-flow-ui-test` writes `UC001SearchCatalogTest` extending `AbstractBrowserlessTest`. It
 drives the view without a browser, but against the real service and database, and covers every
 alternative flow and business rule. Each test method carries `@UseCase(id = "UC-001")`; the test
-data goes into a repeatable migration under `src/test/resources/db/testdata/`. Once that test data
-fills the catalog, the empty-catalog flow cannot be arranged without touching shared rows, so its
-test goes into a `@Nested` class that leaves out `db/testdata` with a `@TestPropertySource` of its
-own and runs against an empty database. With the E2E scope *Use cases and test cases*, the same run
+data goes into a repeatable migration, `src/test/resources/db/migration/R__uc001_search_catalog.sql`,
+which Flyway picks up next to the production migrations without any configuration. Once that test
+data fills the catalog, the empty-catalog flow cannot be arranged with it, so its test method is
+annotated `@Transactional`, deletes the books inside the test transaction, and checks the
+empty-catalog message; the rollback restores the test data. With the E2E scope *Use cases and test cases*, the same run
 then ends with the E2E layer and writes the end-to-end test of step 9 as well.
 
 Run the tests with `./mvnw test`. Then start `TestApplication` again (or `./mvnw spring-boot:test-run`): it loads the same test data,
@@ -207,8 +212,8 @@ With the E2E scope *Use cases and test cases*, the run from step 8 already ends 
 layer; naming it writes or reconciles only this one. `/vaadin-e2e-test` produces a Playwright +
 Drama Finder test, `UC001SearchCatalogIT`, extending `AbstractBasePlaywrightIT`. It boots the app
 on a random port, signs in through the login view, and drives a real browser through the use case.
-The empty-catalog flow gets its own `@Nested` class without the test data, as in the Browserless
-test.
+The empty-catalog flow has no browser test: the running app has one data set, and the Browserless
+test already covers it.
 
 Run it with `./mvnw verify`. This is your outer feedback loop: slower than the Browserless tests,
 but it proves that the JavaScript, CSS, routing, and database layers all line up.

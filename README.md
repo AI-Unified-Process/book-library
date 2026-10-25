@@ -49,8 +49,9 @@ Before running the application, the jOOQ metamodel has to be generated using the
 
 Then you can run the application with a database started by Testcontainers from your IDE using the `TestApplication`,
 or from the command line with `./mvnw spring-boot:test-run`.
-`TestApplication` also loads the test data of the use case tests (`src/test/resources/db/testdata`), so once the
-tutorial's tests exist the app shows the same books, members, and loans.
+`TestApplication` runs on the test classpath, so Flyway also applies the test data migrations of the use case tests
+(`src/test/resources/db/migration/R__*.sql`), and once the tutorial's tests exist the app shows the same books,
+members, and loans. The tests load them the same way, without any profile or `@TestPropertySource`.
 
 **Important:**
 This class uses the [Spring Boot Testcontainers support](https://spring.io/blog/2023/06/23/improved-testcontainers-support-in-spring-boot-3-1/), introduced with Spring Boot 3.1.
