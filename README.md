@@ -12,13 +12,14 @@ software process that combines proven practices from the Unified Process with mo
 Rather than letting an AI agent improvise, AIUP guides it through clearly defined artifacts:
 
 1. **Requirements catalog** – functional requirements (user stories), non-functional requirements,
-   and constraints.
-2. **Use case specifications** – detailed scenarios with main and alternative flows.
+   and constraints, plus a glossary of the domain terms.
+2. **Entity model** – Mermaid ER diagram with attributes and validation rules.
 3. **Use case diagram** – PlantUML overview of actors and system boundaries.
-4. **Entity model** – Mermaid ER diagram with attributes and validation rules.
-5. **Flyway migrations** – versioned SQL scripts derived from the entity model.
-6. **Implementation** – Vaadin views and jOOQ data access generated from the use cases.
-7. **Tests** – Browserless UI unit tests and Playwright end-to-end tests.
+4. **Use case specifications** – detailed scenarios with main and alternative flows.
+5. **Stack file** – which layer skill builds and tests each technical layer.
+6. **Flyway migrations** – versioned SQL scripts derived from the entity model.
+7. **Implementation** – Vaadin views, services, and jOOQ data access generated from the use cases.
+8. **Tests** – Browserless UI unit tests and Playwright end-to-end tests.
 
 Each step has a dedicated skill in `aiup-core` and the layer plugins `aiup-flyway`, `aiup-jooq`,
 `aiup-spring-boot`, and `aiup-vaadin`. The tutorial
