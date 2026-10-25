@@ -93,7 +93,7 @@ or precision, and validation rules. For the Book Library expect roughly:
 - `Member` (id, user_id, name, email) — a library patron, linked 1:1 to an existing `app_user` row
 - `Loan` (id, book_id, member_id, borrowed_at, returned_at)
 
-The `AppUser` entity (id, username, password_hash, role) is part of the starter and does not need
+The `AppUser` entity (id, username, password_hash, role, created_at) is part of the starter and does not need
 its own section in the entity model; treat it as an external boundary that `member.user_id`
 references.
 
@@ -157,6 +157,10 @@ The skill detects the layers but not how many browser tests you want, so it asks
 E2E scope. Answer *Use cases and test cases*; steps 8 and 9 rely on it. With *Test cases only*,
 `/use-case-test` writes no `UC001SearchCatalogIT`, and step 9 has to name the layer explicitly.
 
+> **Entry layers.** Every Book Library use case is offered through the UI, so the specifications need
+> no `**Layers:**` line. In an app that also has a REST API, a use case offered through only one of
+> them says so with a line such as `**Layers:** UI`.
+
 The starter's [`docs/architecture.md`](docs/architecture.md) records the package-by-feature layout
 and that every feature has a service; `/stack` reads it as input and leaves it where it is.
 
@@ -199,7 +203,9 @@ annotated `@Transactional`, deletes the books inside the test transaction, and c
 empty-catalog message; the rollback restores the test data. With the E2E scope *Use cases and test cases*, the same run
 then ends with the E2E layer and writes the end-to-end test of step 9 as well.
 
-Run the tests with `./mvnw test`. Then start `TestApplication` again (or `./mvnw spring-boot:test-run`): it loads the same test data,
+Because these tests run through every layer below, the repository and the service get no tests of
+their own. Run them with `./mvnw test`. They are fast, under a second per test, so they form the
+inner feedback loop while you iterate on the view. Then start `TestApplication` again (or `./mvnw spring-boot:test-run`): it loads the same test data,
 so now you can type a query, see the grid filter, and see the results sorted as the spec requires.
 
 ## Step 9 — Write the End-to-End Test
@@ -232,7 +238,11 @@ four layers, Browserless tests in the integration layer, and an end-to-end test.
 
 ## Where to go next
 
-- Run `/use-case-coverage UC-001` to audit what you built against its specification.
+- Run `/use-case-coverage UC-001` to audit what you built against its specification. Every NFR and
+  constraint on the use case's `**Requirements:**` line is a unit too: a limit a test can observe,
+  such as a response time, stays open until a test asserts it, and only then does the audit suggest
+  `Tested`. Link only the NFRs the use case has to prove; one that holds for the whole system, such as
+  sign-in, needs no link.
 - Run the chain again for UC-002 Borrow book; it reuses `Book` and `Member` and adds rows to `Loan`.
   The seeded account `alice` has no `member` row yet, so its test data links a member of its own; to
   borrow as alice in the running app, give her one in the test data or with UC-006 Manage members.
